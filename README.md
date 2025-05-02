@@ -45,6 +45,7 @@ Ein modernes Trading-System mit technischer Analyse und LSTM-basierter Preisvorh
 
 Die detaillierte Projektstruktur finden Sie in der [project_structure.md](./project_structure.md) Datei.
 
+
 ## Installation
 
 1. Python-Umgebung erstellen (Python 3.9+ erforderlich):
@@ -73,28 +74,32 @@ pre-commit install
 
 ## Verwendung
 
+### Aktien festlegen
+
+Die zu analysierenden Aktien werden in der Datei [project_structure.md](src\nexttick\config.py) festgelegt.
+
 ### Daten laden
 
 ```bash
-python -m nexttick.main download AAPL MSFT GOOGL --days 365
+python -m nexttick.main download --days 365
 ```
 
 ### Technische Analyse durchführen
 
 ```bash
-python -m nexttick.main analyze AAPL MSFT GOOGL
+python -m nexttick.main analyze
 ```
 
 ### LSTM-Modell trainieren
 
 ```bash
-python -m nexttick.main train AAPL MSFT GOOGL --epochs 100
+python -m nexttick.main train --epochs 100
 ```
 
 ### Backtesting durchführen
 
 ```bash
-python -m nexttick.main backtest AAPL MSFT GOOGL
+python -m nexttick.main backtest
 ```
 
 ### Dashboard starten
@@ -146,6 +151,7 @@ mypy src/
 
 Die Konfiguration erfolgt über die `config.py`. Wichtige Parameter:
 
+- **Zu analysierende Aktien werden zentral in `src/nexttick/config.py` in der Liste `SYMBOLS` gepflegt.**
 - Trading-Parameter (Lookback-Periode, Train/Test-Split, etc.)
 - Technische Indikatoren (Perioden für MA, RSI, etc.)
 - LSTM-Modell (Batch-Size, Learning Rate, etc.)

@@ -1,8 +1,9 @@
 import pandas as pd
 import numpy as np
+from src.nexttick.config import get_symbols
 
 # Lade die Daten
-symbols = ['AAPL', 'MSFT', 'GOOGL']
+symbols = get_symbols()
 
 for symbol in symbols:
     # Lade TA-Features

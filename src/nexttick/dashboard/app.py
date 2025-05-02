@@ -10,7 +10,7 @@ import dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output, State
 from loguru import logger
 
-from ..config import PROCESSED_DATA_DIR, TA_FEATURES_DIR
+from ..config import PROCESSED_DATA_DIR, TA_FEATURES_DIR, get_symbols
 
 
 class TradingDashboard:
@@ -32,7 +32,9 @@ class TradingDashboard:
         # Finde verfügbare Symbole
         files = list(PROCESSED_DATA_DIR.glob("*_processed.parquet"))
         self.available_symbols = sorted(set(f.stem.split("_")[0] for f in files))
-        
+        # Fallback auf zentrale Symbol-Liste, falls keine Daten vorhanden
+        if not self.available_symbols:
+            self.available_symbols = get_symbols()
         # Setze Standardwerte
         self.default_symbol = self.available_symbols[0] if self.available_symbols else None
         if self.default_symbol:
@@ -136,9 +138,10 @@ class TradingDashboard:
         def update_symbols(value):
             """Aktualisiere die verfügbaren Symbole."""
             try:
-                # Finde alle verfügbaren Symbole in processed_data
                 files = list(PROCESSED_DATA_DIR.glob("*_processed.parquet"))
                 symbols = [f.stem.split("_")[0] for f in files]
+                if not symbols:
+                    symbols = get_symbols()
                 return [{"label": s, "value": s} for s in sorted(set(symbols))]
             except Exception as e:
                 logger.error(f"Fehler beim Laden der Symbole: {str(e)}")

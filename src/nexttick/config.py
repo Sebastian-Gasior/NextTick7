@@ -42,6 +42,32 @@ TA_CONFIG: Dict[str, Any] = {
     "bollinger_std": 2,
 }
 
+# Zentrale Liste der zu analysierenden Aktien
+SYMBOLS = [
+    'AAPL',
+    'MSFT',
+    'GOOGL',
+    'IBM',
+    'ORCL',
+    'SAP',
+    'ADBE',
+    'AMZN',
+    'NVDA',
+    'TSM',
+    'QCOM',
+    'CSCO',
+    'CMCSA',
+    'INTC',
+    'META',
+    'NFLX',
+    'TSLA',
+    
+]
+
+def get_symbols() -> list:
+    """Gibt die zentrale Liste der zu analysierenden Aktien zurück."""
+    return SYMBOLS
+
 def load_config(config_path: Path) -> Dict[str, Any]:
     """Lade benutzerdefinierte Konfiguration aus YAML-Datei."""
     if not config_path.exists():

@@ -13,7 +13,7 @@ from .ml.lstm_model import LSTMPredictor, ModelTrainer
 from .compare.analyzer import StrategyComparator
 from .backtest.engine import BacktestEngine
 from .dashboard.app import TradingDashboard
-from .config import TA_FEATURES_DIR
+from .config import TA_FEATURES_DIR, get_symbols
 
 
 @click.group()
@@ -27,13 +27,15 @@ def cli():
 @click.option('--days', default=365*5, help='Anzahl der Tage für historische Daten')
 def download(symbols: List[str], days: int):
     """Lade historische Marktdaten für die angegebenen Symbole."""
+    if not symbols:
+        symbols = get_symbols()
     start_date = datetime.now() - timedelta(days=days)
     loader = MarketDataLoader(list(symbols), start_date=start_date)
     
     try:
         data_dict = loader.download_data()
-        processed_dict = loader.process_data(data_dict)
-        logger.info(f"Daten erfolgreich geladen für {len(processed_dict)} Symbole")
+        loader.process_data(data_dict)
+        logger.info(f"Daten erfolgreich geladen für {len(data_dict)} Symbole")
     except Exception as e:
         logger.error(f"Fehler beim Laden der Daten: {str(e)}")
         raise click.Abort()
@@ -43,6 +45,8 @@ def download(symbols: List[str], days: int):
 @click.argument('symbols', nargs=-1)
 def analyze(symbols: List[str]):
     """Führe technische Analyse für die angegebenen Symbole durch."""
+    if not symbols:
+        symbols = get_symbols()
     ta = TechnicalAnalysis()
     
     try:
@@ -68,6 +72,8 @@ def analyze(symbols: List[str]):
 @click.option('--epochs', default=100, help='Anzahl der Trainings-Epochen')
 def train(symbols: List[str], epochs: int):
     """Trainiere das LSTM-Modell für die angegebenen Symbole."""
+    if not symbols:
+        symbols = get_symbols()
     trainer = ModelTrainer()
     
     try:
@@ -128,6 +134,8 @@ def train(symbols: List[str], epochs: int):
 @click.argument('symbols', nargs=-1)
 def backtest(symbols: List[str]):
     """Führe Backtesting für beide Strategien durch."""
+    if not symbols:
+        symbols = get_symbols()
     engine = BacktestEngine()
     comparator = StrategyComparator()
     
