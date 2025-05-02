@@ -13,12 +13,12 @@ Ein modernes Trading-System mit technischer Analyse und LSTM-basierter Preisvorh
 
 ## Screeshots
 
-![Preis & Volumen Dashboard](project-images\Bild1-Preis-Volumen.png)
+![Preis & Volumen Dashboard](project-images/Bild1-Preis-Volumen.png)
 **Preis-Volumen**
 - Preisübersicht der ausgewählten Aktie
 - Volumen der ausgewählten Aktie
 
-![Technische Analyse Dashboard](project-images\Bild2-Technische-Amnalyse.png)
+![Technische Analyse Dashboard](project-images/Bild2-Technische-Analyse.png)
 **technische Analyse**
 - Aktienverluaf im ausgewählten Zeitraum
 - SMA 20
@@ -28,12 +28,12 @@ Ein modernes Trading-System mit technischer Analyse und LSTM-basierter Preisvorh
 - EMA 26
 - RSI
 
-![ML-Vorhersage Dashboard](project-images\Bild3-ML-Vorhersagen.png)
+![ML-Vorhersage Dashboard](project-images/Bild3-ML-Vorhersagen.png)
 **Machine Learning Vorhersage**
 - Aktienverluaf im ausgewählten Zeitraum
 - Vorhersage des Aktienverluafs
 
-![Trading Vergleich Dashboard](project-images\Bild4-Trategie-Vergleich.png)
+![Trading Vergleich Dashboard](project-images/Bild4-Strategie-Vergleich.png)
 **Strategie Vergleich**
 - Trading Vergleich Technische Analyse vs. Machine Learning Analyse
 - TA Stategy
