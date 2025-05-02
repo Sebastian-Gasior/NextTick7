@@ -28,6 +28,12 @@ class MarketDataLoader:
         self.start_date = start_date or (datetime.now() - timedelta(days=365*5))
         self.end_date = end_date or datetime.now()
         
+        # Stelle sicher, dass die Daten in der richtigen Zeitzone sind
+        if self.start_date.tzinfo is None:
+            self.start_date = pd.Timestamp(self.start_date).tz_localize('America/New_York')
+        if self.end_date.tzinfo is None:
+            self.end_date = pd.Timestamp(self.end_date).tz_localize('America/New_York')
+        
     def download_data(self) -> Dict[str, pd.DataFrame]:
         """Lade Marktdaten von Yahoo Finance.
 
@@ -40,12 +46,20 @@ class MarketDataLoader:
         for symbol in self.symbols:
             try:
                 ticker = yf.Ticker(symbol)
-                df = ticker.history(start=self.start_date, end=self.end_date)
+                # Konvertiere Datum zu string im Format YYYY-MM-DD
+                start_str = self.start_date.strftime('%Y-%m-%d')
+                end_str = self.end_date.strftime('%Y-%m-%d')
+                
+                df = ticker.history(start=start_str, end=end_str)
                 
                 if df.empty:
                     logger.warning(f"Keine Daten gefunden für {symbol}")
                     continue
                     
+                # Stelle sicher, dass der Index die richtige Zeitzone hat
+                if df.index.tz is None:
+                    df.index = df.index.tz_localize('America/New_York')
+                
                 # Speichere Rohdaten
                 raw_path = RAW_DATA_DIR / f"{symbol}_raw.parquet"
                 df.to_parquet(raw_path)
@@ -59,37 +73,25 @@ class MarketDataLoader:
                 
         return data_dict
     
-    def process_data(self, data_dict: Dict[str, pd.DataFrame]) -> Dict[str, pd.DataFrame]:
+    def process_data(self, data_dict: Dict[str, pd.DataFrame]) -> None:
         """Verarbeite die Rohdaten.
 
         Args:
             data_dict: Dict mit Symbol als Schlüssel und DataFrame als Wert
-
-        Returns:
-            Dict mit verarbeiteten DataFrames
         """
-        processed_dict = {}
-        
         for symbol, df in data_dict.items():
             try:
-                # Grundlegende Verarbeitung
-                df = df.copy()
-                df.index = pd.to_datetime(df.index)
-                df = df.sort_index()
-                
-                # Berechne Returns
-                df['returns'] = df['Close'].pct_change()
-                df['log_returns'] = np.log(df['Close'] / df['Close'].shift(1))
+                # Stelle sicher, dass der Index die richtige Zeitzone hat
+                if df.index.tz is None:
+                    df.index = df.index.tz_localize('America/New_York')
+                else:
+                    df.index = df.index.tz_convert('America/New_York')
                 
                 # Speichere verarbeitete Daten
                 processed_path = PROCESSED_DATA_DIR / f"{symbol}_processed.parquet"
                 df.to_parquet(processed_path)
                 logger.info(f"Verarbeitete Daten gespeichert in {processed_path}")
                 
-                processed_dict[symbol] = df
-                
             except Exception as e:
                 logger.error(f"Fehler bei der Verarbeitung von {symbol}: {str(e)}")
-                continue
-                
-        return processed_dict 
+                continue 

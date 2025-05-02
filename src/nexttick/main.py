@@ -104,22 +104,16 @@ def train(symbols: List[str], epochs: int):
             # Berechne die prozentuale Änderung zwischen Vorhersage und aktuellem Preis
             # Nur dort, wo wir Vorhersagen haben (full_predictions > 0)
             has_prediction = full_predictions > 0
-            if np.any(has_prediction):
-                price_diff_pct = np.zeros(len(df))
-                price_diff_pct[has_prediction] = (full_predictions[has_prediction] - df['Close'].values[has_prediction]) / df['Close'].values[has_prediction] * 100
-                
-                # Signalgenerierung mit Schwellenwerten:
-                # Kaufen (1), wenn Preis voraussichtlich um mehr als 0.5% steigt
-                # Verkaufen (-1), wenn Preis voraussichtlich um mehr als 0.5% fällt
-                # Sonst halten (0)
-                threshold = 0.5  # 0.5% Schwellenwert
-                price_change_prediction[price_diff_pct > threshold] = 1    # Long
-                price_change_prediction[price_diff_pct < -threshold] = -1  # Short
+            price_change_prediction[has_prediction] = (full_predictions[has_prediction] - df['Close'][has_prediction]) / df['Close'][has_prediction] * 100
             
-            df['ML_Signal'] = price_change_prediction
+            # Generiere Signale basierend auf der vorhergesagten Preisänderung
+            # Verwende einen Schwellenwert von 0.5% für Signale
+            df['ML_Signal'] = np.where(price_change_prediction > 0.5, 1,
+                                     np.where(price_change_prediction < -0.5, -1, 0))
             
-            # Speichere aktualisierte Features
+            # Speichere die aktualisierten Features
             df.to_parquet(features_path)
+            logger.info(f"ML-Features aktualisiert für {symbol}")
             
             # Speichere Modell
             trainer.save_model(trained_model, symbol)

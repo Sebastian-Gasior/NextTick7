@@ -165,15 +165,29 @@ class TradingDashboard:
                 df = pd.read_parquet(PROCESSED_DATA_DIR / f"{symbol}_processed.parquet")
                 ta_df = pd.read_parquet(TA_FEATURES_DIR / f"{symbol}_ta_features.parquet")
                 
-                # Bestimme den gemeinsamen Zeitraum
-                common_start = max(df.index.min(), ta_df.index.min())
-                common_end = min(df.index.max(), ta_df.index.max())
+                # Konvertiere start_date und end_date zu Pandas Timestamp mit der gleichen Zeitzone
+                if start_date:
+                    start_date = pd.Timestamp(start_date).tz_localize('America/New_York')
+                if end_date:
+                    end_date = pd.Timestamp(end_date).tz_localize('America/New_York')
                 
-                # Wenn start_date und end_date nicht gesetzt sind, verwende den gemeinsamen Zeitraum
+                # Stelle sicher, dass die Index-Zeitzone korrekt ist
+                if df.index.tz is None:
+                    df.index = df.index.tz_localize('America/New_York')
+                if ta_df.index.tz is None:
+                    ta_df.index = ta_df.index.tz_localize('America/New_York')
+                
+                # Wenn start_date und end_date nicht gesetzt sind, verwende den gesamten verfügbaren Zeitraum
                 if not start_date:
-                    start_date = common_start
+                    start_date = df.index.min()
                 if not end_date:
-                    end_date = common_end
+                    end_date = df.index.max()
+                
+                # Konvertiere alle Zeitstempel in die gleiche Zeitzone
+                df.index = df.index.tz_convert('America/New_York')
+                ta_df.index = ta_df.index.tz_convert('America/New_York')
+                start_date = start_date.tz_convert('America/New_York')
+                end_date = end_date.tz_convert('America/New_York')
                 
                 # Filtere die Daten nach dem gewählten Zeitraum
                 df = df[(df.index >= start_date) & (df.index <= end_date)]
@@ -270,7 +284,8 @@ class TradingDashboard:
         
         fig.update_layout(
             title="Preis & Volumen",
-            xaxis_rangeslider_visible=False
+            xaxis_rangeslider_visible=False,
+            height=800
         )
         
         return fig
@@ -329,7 +344,8 @@ class TradingDashboard:
         
         fig.update_layout(
             title="Technische Analyse",
-            xaxis_rangeslider_visible=False
+            xaxis_rangeslider_visible=False,
+            height=800
         )
         
         return fig
@@ -358,7 +374,6 @@ class TradingDashboard:
         
         # Vorhersagen (falls vorhanden)
         if ta_df is not None and 'ML_Prediction' in ta_df.columns:
-            # Filtere auf Bereiche, wo die Vorhersage > 0 ist (keine Nullwerte)
             pred_df = ta_df[ta_df['ML_Prediction'] > 0]
             if not pred_df.empty:
                 fig.add_trace(
@@ -372,7 +387,8 @@ class TradingDashboard:
             
         fig.update_layout(
             title="ML Vorhersagen",
-            xaxis_rangeslider_visible=False
+            xaxis_rangeslider_visible=False,
+            height=800
         )
         
         return fig
@@ -389,7 +405,7 @@ class TradingDashboard:
         fig = make_subplots(
             rows=2, cols=1,
             shared_xaxes=True,
-            vertical_spacing=0.1
+            vertical_spacing=0.2
         )
         
         # Kumulierte Returns
@@ -438,7 +454,8 @@ class TradingDashboard:
             
         fig.update_layout(
             title="Strategie-Vergleich",
-            xaxis_rangeslider_visible=False
+            xaxis_rangeslider_visible=False,
+            height=800
         )
         
         return fig
